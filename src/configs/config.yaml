@@ -21,7 +21,7 @@ ddp:
 
 project:
   seed: 42
-  path: "/home/jovyan/meshchaninov/DiMAv2.0"
+  path: "/home/cherry/dev/phd/DiMA"
   wandb_project: "test" #"DiMAv2.0-scaling"
   checkpoints_prefix: "test" #"DiMAv2.0-35M-CHEAP_shorten_1_dim_1024-AFDB-v2_64_510-1024-320"
   checkpoints_folder: "${project.path}/checkpoints"
