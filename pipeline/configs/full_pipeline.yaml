@@ -1,0 +1,44 @@
+# Full end-to-end pipeline: data -> models -> stats -> decoder -> diffusion -> inference -> metrics
+#
+# Usage:
+#   python run_pipeline.py --pipeline pipeline/configs/full_pipeline.yaml
+#
+# To override encoder/dataset:
+#   python run_pipeline.py --pipeline pipeline/configs/full_pipeline.yaml \
+#       --hydra-overrides encoder=cheap datasets=swissprot
+
+config_path: "../configs"
+
+plugins: []
+#  - path: "./my_plugins/custom_encoder.py"
+#  - package: "dima_plugin_custom"
+
+hydra_overrides: []
+#  - "encoder=esm2"
+#  - "datasets=afdb"
+
+stages:
+  - name: setup_data
+    enabled: true
+
+  - name: setup_models
+    enabled: true
+
+  - name: calculate_statistics
+    enabled: true
+
+  - name: train_decoder
+    enabled: true
+    on_failure: continue  # Skip if not applicable (e.g., CHEAP encoder)
+
+  - name: train_diffusion
+    enabled: true
+    on_failure: abort
+
+  - name: run_inference
+    enabled: true
+
+  - name: evaluate_metrics
+    enabled: true
+    params:
+      metrics: [fid, mmd, esm_pppl, plddt]

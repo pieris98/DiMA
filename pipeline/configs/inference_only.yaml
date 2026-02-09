@@ -1,0 +1,26 @@
+# Inference-only pipeline: generate samples and evaluate metrics
+#
+# Usage:
+#   python run_pipeline.py --pipeline pipeline/configs/inference_only.yaml
+#
+# Requires a trained checkpoint. Set via context or config:
+#   python run_pipeline.py --pipeline pipeline/configs/inference_only.yaml \
+#       --checkpoint /path/to/checkpoint.pth
+
+config_path: "../configs"
+
+plugins: []
+
+hydra_overrides: []
+
+stages:
+  - name: setup_models
+    enabled: true
+
+  - name: run_inference
+    enabled: true
+
+  - name: evaluate_metrics
+    enabled: true
+    params:
+      metrics: [fid, mmd, esm_pppl]

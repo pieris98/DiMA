@@ -1,0 +1,28 @@
+# Training-only pipeline: data setup through diffusion training
+#
+# Usage:
+#   python run_pipeline.py --pipeline pipeline/configs/train_only.yaml
+
+config_path: "../configs"
+
+plugins: []
+
+hydra_overrides: []
+
+stages:
+  - name: setup_data
+    enabled: true
+
+  - name: setup_models
+    enabled: true
+
+  - name: calculate_statistics
+    enabled: true
+
+  - name: train_decoder
+    enabled: true
+    on_failure: continue
+
+  - name: train_diffusion
+    enabled: true
+    on_failure: abort
