@@ -1,6 +1,5 @@
 import torch
 from transformers import EsmForMaskedLM, EsmTokenizer, AutoModel, AutoTokenizer
-from cheap.pretrained import load_pretrained_model, CHECKPOINT_DIR_PATH
 import os
 import argparse
 
@@ -27,6 +26,7 @@ def setup_cheap():
     # Based on src/encoders/cheap.py, it uses load_pretrained_model
     # We'll try to trigger a download if possible, or just verify it runs
     try:
+        from cheap.pretrained import load_pretrained_model, CHECKPOINT_DIR_PATH
         # These params match what's in cheap.yaml
         shorten_factor = 1
         channel_dimension = 1024

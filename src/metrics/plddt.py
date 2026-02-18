@@ -4,11 +4,10 @@ import biotite.structure.io as bsio
 from typing import List, Dict
 from tqdm import tqdm
 
-from cheap.esmfold import esmfold_v1
-
 
 class ESMMetric:
     def __init__(self, device: str = "cpu"):
+        from cheap.esmfold import esmfold_v1
         self.model = esmfold_v1()
         self.model = self.model.eval().to(device)
         self.device = device

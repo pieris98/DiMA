@@ -41,16 +41,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--json_path", type=str, required=True, help="Path to generated json")
     parser.add_argument("--metrics", nargs="+", default=["esmpppl", "plddt"], help="Metrics to calc")
-    parser.add_argument("--config_path", type=str, default="src/configs/config.yaml")
+    parser.add_argument("--config_path", type=str, default="src/configs",
+                        help="Path to the configs directory (not the yaml file)")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     with open(args.json_path, "r") as f:
         sequences = json.load(f)
-        
-    # config needed? maybe for some paths
-    config = setup_config(config_path=args.config_path)
+
+    config_path = args.config_path
+    if config_path.endswith(".yaml") or config_path.endswith(".yml"):
+        config_path = os.path.dirname(config_path)
+    config = setup_config(config_path=config_path)
     
     results = calculate_metrics(sequences, config, device, args.metrics)
     

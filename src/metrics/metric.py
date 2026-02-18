@@ -3,7 +3,6 @@ import torch
 import numpy as np
 from typing import Optional, List
 
-from src.metrics.plddt import calculate_plddt
 from src.metrics.fid import calculate_fid_for_lists
 from src.metrics.mmd import calculate_mmd_for_lists
 from src.metrics.esmpppl import calculate_pppl
@@ -21,8 +20,9 @@ def compute_ddp_metric(metric_name: str, predictions: List[str], references: Lis
         references = references[rank * num_samples: (rank + 1) * num_samples]
         index_list = list(range(rank * num_samples, (rank + 1) * num_samples))
 
-    if metric_name == "plddt":  
-        print(f"Calculating plddt for {len(predictions)} texts")  
+    if metric_name == "plddt":
+        from src.metrics.plddt import calculate_plddt
+        print(f"Calculating plddt for {len(predictions)} texts")
         plddt_result = calculate_plddt(predictions=predictions, index_list=index_list, device=device, pdb_path=pdb_path)
         value = np.mean(list(plddt_result.values()))
 

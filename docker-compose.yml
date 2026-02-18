@@ -1,0 +1,33 @@
+services:
+  dima:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dima:latest
+    # GPU access
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    # Mount host model caches so re-builds don't re-download weights
+    volumes:
+      - ~/.cache/huggingface:/workspace/DiMA/.cache/huggingface
+      - ./checkpoints:/workspace/DiMA/checkpoints
+      - ./data:/workspace/DiMA/data
+      # Mount source for live editing without rebuilding
+      - ./src:/workspace/DiMA/src
+      - ./auto-scripts:/workspace/DiMA/auto-scripts
+    working_dir: /workspace/DiMA
+    environment:
+      - WANDB_MODE=offline
+      - HF_HOME=/workspace/DiMA/.cache/huggingface
+      - TRANSFORMERS_CACHE=/workspace/DiMA/.cache/huggingface/hub
+      - PROJECT_ROOT=/workspace/DiMA
+    # Interactive by default; override CMD for specific tasks
+    stdin_open: true
+    tty: true
+    # Default: run the simple generation example
+    command: ["python", "example_simple.py"]
