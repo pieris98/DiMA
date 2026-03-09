@@ -42,14 +42,16 @@ def setup_cheap():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--models", nargs="+", default=["esm2", "saprot", "cheap"], help="Models to setup")
+    parser.add_argument("--models", nargs="+", default=["esm2"], help="Models to setup")
+    parser.add_argument("--esm2_model", type=str, default="facebook/esm2_t36_3B_UR50D",
+                        help="HuggingFace model ID for ESM2 (default: 3B for HPC)")
     args = parser.parse_args()
 
     if "esm2" in args.models:
-        setup_esm2()
-    
+        setup_esm2(model_name=args.esm2_model)
+
     if "saprot" in args.models:
         setup_saprot()
-        
+
     if "cheap" in args.models:
         setup_cheap()

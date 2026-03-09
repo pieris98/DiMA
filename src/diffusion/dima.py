@@ -18,8 +18,8 @@ from src.utils.pretrained_utils import PRETRAINED_MODELS_PATHS
 MODEL_INDEX_URL = "https://your-cloud-service.com/models/model_index.json"
 
 class DiMAModel(BaseDiffusionTrainer):
-    def __init__(self, config_path: str, device: torch.device):
-        config = setup_config(config_path=config_path)
+    def __init__(self, config_path: str, device: torch.device, overrides=None):
+        config = setup_config(config_path=config_path, overrides=overrides)
         super().__init__(config, device)
         
     def _get_file_or_download(self, relative_path: str) -> Path:

@@ -1,8 +1,12 @@
 services:
   dima:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
+      args:
+        PROJECT_DIR: DiMA
+        PIXI_ENV: dima-env
+        BASE_IMAGE: nvidia/cuda:12.1.1-devel-ubuntu22.04
     image: dima:latest
     # GPU access
     deploy:
@@ -14,18 +18,18 @@ services:
               capabilities: [gpu]
     # Mount host model caches so re-builds don't re-download weights
     volumes:
-      - ~/.cache/huggingface:/workspace/DiMA/.cache/huggingface
-      - ./checkpoints:/workspace/DiMA/checkpoints
-      - ./data:/workspace/DiMA/data
+      - ~/.cache/huggingface:/workspace/phd/DiMA/.cache/huggingface
+      - ./checkpoints:/workspace/phd/DiMA/checkpoints
+      - ./data:/workspace/phd/DiMA/data
       # Mount source for live editing without rebuilding
-      - ./src:/workspace/DiMA/src
-      - ./auto-scripts:/workspace/DiMA/auto-scripts
-    working_dir: /workspace/DiMA
+      - ./src:/workspace/phd/DiMA/src
+      - ./auto-scripts:/workspace/phd/DiMA/auto-scripts
+    working_dir: /workspace/phd/DiMA
     environment:
       - WANDB_MODE=offline
-      - HF_HOME=/workspace/DiMA/.cache/huggingface
-      - TRANSFORMERS_CACHE=/workspace/DiMA/.cache/huggingface/hub
-      - PROJECT_ROOT=/workspace/DiMA
+      - HF_HOME=/workspace/phd/DiMA/.cache/huggingface
+      - TRANSFORMERS_CACHE=/workspace/phd/DiMA/.cache/huggingface/hub
+      - PROJECT_ROOT=/workspace/phd/DiMA
     # Interactive by default; override CMD for specific tasks
     stdin_open: true
     tty: true
