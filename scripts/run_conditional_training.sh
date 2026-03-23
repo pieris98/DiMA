@@ -17,7 +17,7 @@
 set -e
 
 # Configuration - adjust these paths as needed
-PROJECT_ROOT="$WORK/AMPERE/DiMA"
+PROJECT_ROOT="${WORK}/AMPERE/DiMA"
 DATA_DIR="${PROJECT_ROOT}/data"
 CHECKPOINT_DIR="${PROJECT_ROOT}/checkpoints"
 

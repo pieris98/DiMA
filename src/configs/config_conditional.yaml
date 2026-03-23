@@ -26,7 +26,7 @@ ddp:
 
 project:
   seed: 42
-  path: "${oc.env:PROJECT_ROOT,$WORK/AMPERE/DiMA}"
+  path: "${oc.env:PROJECT_ROOT,${WORK}/AMPERE/DiMA}"
   wandb_project: "dima-conditional"
   checkpoints_prefix: "conditional-${conditional.type}-esm2_8m"
   checkpoints_folder: "${project.path}/checkpoints"

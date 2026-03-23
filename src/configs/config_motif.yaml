@@ -25,7 +25,7 @@ ddp:
 
 project:
   seed: 42
-  path: "${oc.env:PROJECT_ROOT,$WORK/AMPERE/DiMA}"
+  path: "${oc.env:PROJECT_ROOT,${WORK}/AMPERE/DiMA}"
   wandb_project: "dima-conditional"
   checkpoints_prefix: "conditional-motif-saprot"
   checkpoints_folder: "${project.path}/checkpoints"
