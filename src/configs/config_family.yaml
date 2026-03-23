@@ -48,7 +48,7 @@ ddp:
 
 project:
   seed: 42
-  path: "${oc.env:PROJECT_ROOT,/home/cherry/dev/phd/DiMA}"
+  path: "${oc.env:PROJECT_ROOT,$WORK/AMPERE/DiMA}"
   wandb_project: "dima-family"
   checkpoints_prefix: "family-conditional-esm2-650m"
   checkpoints_folder: "${project.path}/checkpoints"

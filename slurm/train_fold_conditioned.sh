@@ -28,7 +28,7 @@ export NNODES=$SLURM_NNODES
 export WORLD_SIZE=$(($GPUS_PER_NODE * $NNODES))
 
 # Working directories
-export PROJECT_ROOT=/home/cherry/dev/phd/DiMA
+export PROJECT_ROOT=$WORK/AMPERE/DiMA
 export WORK_DIR=$SCRATCH/dima_work
 export DATA_DIR=$WORK_DIR/data
 export CHECKPOINT_DIR=$WORK_DIR/checkpoints

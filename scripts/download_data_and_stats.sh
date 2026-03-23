@@ -13,7 +13,7 @@
 
 set -e
 
-PROJECT_ROOT="/home/cherry/dev/phd/DiMA"
+PROJECT_ROOT="$WORK/AMPERE/DiMA"
 DATA_DIR="${PROJECT_ROOT}/data"
 CHECKPOINT_DIR="${PROJECT_ROOT}/checkpoints"
 
