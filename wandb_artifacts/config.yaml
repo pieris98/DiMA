@@ -1,16 +1,21 @@
 model:
-  _target_: src.models.score_estimator.ScoreEstimator
-  _partial_: true
+  _target_: src.models.ScoreEstimator
   config:
-    num_blocks: 6
-    num_heads: 8
-    head_dim: 64
-    intermediate_size: 2048
-    dropout: 0.1
+    add_cross_attention: false
+    attention_head_size: 20
+    attention_probs_dropout_prob: 0.1
     embedding_size: 320
-    max_sequence_len: 1024
-    add_cross_attention: ${conditional.cross_attention}
-    cross_attention_cond_dim: ${conditional.dim}
+    hidden_dropout_prob: 0.1
+    hidden_size: 320
+    initializer_range: 0.02
+    intermediate_size: 3072
+    layer_norm_eps: 1.0e-12
+    max_position_embeddings: 512
+    norm_type: layernorm
+    num_attention_heads: 16
+    num_hidden_layers: 12
+    qk_norm: false
+    use_self_cond: true
 encoder:
   _target_: src.encoders.ESM2EncoderModel
   _partial_: true
@@ -82,29 +87,6 @@ structure_generation:
   num_samples: 10
   batch_size: 2
   artifacts_dir: ${structure_generation.expetiment_dir}/generated_artifacts
-conditional:
-  type: family
-  dim: 320
-  cross_attention: false
-  num_families: 9
-  approach: conditional_finetuning
-families:
-- CRISPR
-- Calmodulin
-- Glycosyl_hydrolase
-- LexA
-- Lysozyme
-- NrdR
-- PHI
-- PurE
-- no_family
-classifier:
-  enabled: false
-  num_blocks: 3
-  hidden_dim: 320
-  lr: 0.0002
-  training_iters: 300
-  batch_size: 1024
 ddp:
   enabled: false
   local_rank: 0
@@ -113,7 +95,7 @@ project:
   seed: 42
   path: ${oc.env:PROJECT_ROOT,/home/cherry/dev/phd/DiMA}
   wandb_project: test
-  checkpoints_prefix: family-conditional-esm2-8m-test
+  checkpoints_prefix: test-esm2-8m-swissprot
   checkpoints_folder: ${project.path}/checkpoints
   diffusion_checkpoints_folder: ${project.checkpoints_folder}/diffusion_checkpoints
   decoder_checkpoints_folder: ${project.checkpoints_folder}/decoder_checkpoints
@@ -123,18 +105,17 @@ s3:
   region: eu-north-1
 training:
   training_iters: 100
-  eval_interval: 50
-  save_interval: 100
+  eval_interval: 2
+  save_interval: 2
   batch_size: 8
   batch_size_per_gpu: 8
   ema_rate: 0.9999
   grad_clip_norm: 1.0
-  lr: 5.0e-05
   init_se: ''
+  iters: 2
 generation:
   t_min: 0.05
   N_steps: 2000
   batch_size: 256
-  num_gen_samples: 2048
-  save_dir: ${project.path}/generated_sequences/family
-  guidance_scale: 5.0
+  num_gen_samples: 10
+  save_dir: ${project.path}/generated_sequences

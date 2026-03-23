@@ -470,14 +470,17 @@ class BaseDiffusionTrainer:
             max_len = self.config.datasets.max_sequence_len
             self.logger.info(f"Calculating {metric_name} for {num_samples} texts")
             
+            rank = 0 if not self.config.ddp.enabled else self.config.ddp.global_rank
+            world_size = 1 if not self.config.ddp.enabled else dist.get_world_size()
+            
             tmp_result = compute_ddp_metric(
                 metric_name,
                 predictions=generated_sequences[:num_samples],
                 references=reference_sequences[:num_samples],
                 max_len = max_len,
                 device = self.device,
-                rank = self.config.ddp.global_rank,
-                world_size = dist.get_world_size(),
+                rank = rank,
+                world_size = world_size,
                 pdb_path = self.config.metrics[metric_name].pdb_path if "plddt" in metric_name else None
             )
             result_metrics[metric_name] = tmp_result

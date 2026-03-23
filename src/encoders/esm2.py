@@ -73,7 +73,7 @@ class ESM2EncoderModel(Encoder):
 
     def batch_decode(self, encodings, attention_mask=None):
         encodings = self.enc_normalizer.denormalize(encodings)
-        logits = self.sequence_decoder(x=encodings, mask=attention_mask)
+        logits = self.sequence_decoder(features=encodings)
 
         token_ids = logits.argmax(axis=-1).detach().cpu().tolist()
         if attention_mask is not None:
@@ -92,7 +92,7 @@ class ESM2EncoderModel(Encoder):
         if self.decoder_type == "transformer":
             logits = self.sequence_decoder(x=encodings, mask=attention_mask)
         else:
-            logits = self.sequence_decoder(encodings)
+            logits = self.sequence_decoder(features=encodings)
         return logits
 
     def restore_decoder(self, decoder_path: str):
