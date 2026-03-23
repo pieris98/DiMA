@@ -1,0 +1,78 @@
+defaults:
+  - model: conditional_bert
+  - encoder: esm2_8m
+  - decoder: default
+  - datasets: swissprot
+  - dataloader: default
+  - scheduler: tanh
+  - dynamic: sde
+  - solver: euler
+  - optimizer: adamw
+  - lr_scheduler: cosine
+  - metrics: default
+  - structure_generation: default
+  - _self_
+
+conditional:
+  type: family
+  dim: 320
+  cross_attention: false
+  num_families: 9
+  approach: conditional_finetuning
+
+families:
+  - CRISPR
+  - Calmodulin
+  - Glycosyl_hydrolase
+  - LexA
+  - Lysozyme
+  - NrdR
+  - PHI
+  - PurE
+  - no_family
+
+classifier:
+  enabled: false
+  num_blocks: 3
+  hidden_dim: 320
+  lr: 0.0002
+  training_iters: 300
+  batch_size: 1024
+
+ddp:
+  enabled: false
+  local_rank: 0
+  global_rank: 0
+
+project:
+  seed: 42
+  path: "${oc.env:PROJECT_ROOT,/home/cherry/dev/phd/DiMA}"
+  wandb_project: "test"
+  checkpoints_prefix: "family-conditional-esm2-8m-test"
+  checkpoints_folder: "${project.path}/checkpoints"
+  diffusion_checkpoints_folder: "${project.checkpoints_folder}/diffusion_checkpoints"
+  decoder_checkpoints_folder: "${project.checkpoints_folder}/decoder_checkpoints"
+  statistics_folder: "${project.checkpoints_folder}/statistics"
+
+s3:
+  bucket: "dima-protein-diffusion"
+  region: "eu-north-1"
+
+training:
+  training_iters: 100
+  eval_interval: 50
+  save_interval: 100
+  batch_size: 8
+  batch_size_per_gpu: 8
+  ema_rate: 0.9999
+  grad_clip_norm: 1.0
+  lr: 0.00005
+  init_se: ""
+
+generation:
+  t_min: 0.05
+  N_steps: 2000
+  batch_size: 256
+  num_gen_samples: 2048
+  save_dir: "${project.path}/generated_sequences/family"
+  guidance_scale: 5.0

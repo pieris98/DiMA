@@ -1,0 +1,13 @@
+_target_: src.models.score_estimator.ScoreEstimator
+_partial_: true
+
+config:
+  num_blocks: 6
+  num_heads: 8
+  head_dim: 64
+  intermediate_size: 2048
+  dropout: 0.1
+  embedding_size: 2560
+  max_sequence_len: 1024
+  add_cross_attention: ${conditional.cross_attention}
+  cross_attention_cond_dim: ${conditional.dim}

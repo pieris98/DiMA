@@ -1,0 +1,140 @@
+model:
+  _target_: src.models.score_estimator.ScoreEstimator
+  _partial_: true
+  config:
+    num_blocks: 6
+    num_heads: 8
+    head_dim: 64
+    intermediate_size: 2048
+    dropout: 0.1
+    embedding_size: 320
+    max_sequence_len: 1024
+    add_cross_attention: ${conditional.cross_attention}
+    cross_attention_cond_dim: ${conditional.dim}
+encoder:
+  _target_: src.encoders.ESM2EncoderModel
+  _partial_: true
+  config:
+    encoder_type: ESM2-8M
+    encoder_model_name: facebook/esm2_t6_8M_UR50D
+    statistics_path: ${project.statistics_folder}/encodings-ESM2-8M.pth
+    embedding_dim: 320
+decoder:
+  decoder_type: lm_head
+  optimizer:
+    _target_: torch.optim.AdamW
+    lr: 0.0001
+    weight_decay: 0.001
+    betas:
+    - 0.9
+    - 0.98
+  training_epochs: 1
+  max_T: 0.25
+  min_T: 0.001
+  decoder_path: ${project.decoder_checkpoints_folder}/lm_head-decoder-${encoder.config.encoder_type}.pth
+datasets:
+  data_name: swissprot
+  data_dir: ${project.path}/data/${datasets.data_name}
+  length_distribution: ${project.path}/data/distributions/${datasets.data_name}.npy
+  max_sequence_len: 254
+dataloader:
+  _target_: torch.utils.data.DataLoader
+  batch_size: ${training.batch_size_per_gpu}
+  num_workers: 30
+  drop_last: true
+scheduler:
+  _target_: src.diffusion.schedulers.Tanh
+  d: 10.0
+dynamic:
+  _target_: src.diffusion.dynamic.DynamicSDE
+  T: 1.0
+solver:
+  _target_: src.diffusion.solvers.EulerDiffEqSolver
+  ode_sampling: false
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 0.0004
+  weight_decay: 0.01
+  betas:
+  - 0.9
+  - 0.98
+  eps: 1.0e-06
+lr_scheduler:
+  _target_: timm.scheduler.cosine_lr.CosineLRScheduler
+  t_initial: ${training.training_iters}
+  lr_min: 0.0002
+  warmup_lr_init: 1.0e-06
+  warmup_t: 1000
+  cycle_limit: 1
+  t_in_epochs: false
+metrics:
+  fid:
+    num_samples: 2048
+  mmd:
+    num_samples: 2048
+  esm_pppl:
+    num_samples: 512
+  plddt:
+    num_samples: 512
+    pdb_path: ${project.path}/pdb_files/${project.checkpoints_prefix}
+structure_generation:
+  expetiment_dir: ${project.path}/exps/structure_generation
+  num_samples: 10
+  batch_size: 2
+  artifacts_dir: ${structure_generation.expetiment_dir}/generated_artifacts
+conditional:
+  type: family
+  dim: 320
+  cross_attention: false
+  num_families: 9
+  approach: conditional_finetuning
+families:
+- CRISPR
+- Calmodulin
+- Glycosyl_hydrolase
+- LexA
+- Lysozyme
+- NrdR
+- PHI
+- PurE
+- no_family
+classifier:
+  enabled: false
+  num_blocks: 3
+  hidden_dim: 320
+  lr: 0.0002
+  training_iters: 300
+  batch_size: 1024
+ddp:
+  enabled: false
+  local_rank: 0
+  global_rank: 0
+project:
+  seed: 42
+  path: ${oc.env:PROJECT_ROOT,/home/cherry/dev/phd/DiMA}
+  wandb_project: test
+  checkpoints_prefix: family-conditional-esm2-8m-test
+  checkpoints_folder: ${project.path}/checkpoints
+  diffusion_checkpoints_folder: ${project.checkpoints_folder}/diffusion_checkpoints
+  decoder_checkpoints_folder: ${project.checkpoints_folder}/decoder_checkpoints
+  statistics_folder: ${project.checkpoints_folder}/statistics
+s3:
+  bucket: dima-protein-diffusion
+  region: eu-north-1
+training:
+  training_iters: 100
+  eval_interval: 50
+  save_interval: 100
+  batch_size: 8
+  batch_size_per_gpu: 8
+  ema_rate: 0.9999
+  grad_clip_norm: 1.0
+  lr: 5.0e-05
+  init_se: ''
+generation:
+  t_min: 0.05
+  N_steps: 2000
+  batch_size: 256
+  num_gen_samples: 2048
+  save_dir: ${project.path}/generated_sequences/family
+  guidance_scale: 5.0

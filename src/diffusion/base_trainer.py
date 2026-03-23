@@ -65,6 +65,12 @@ class BaseDiffusionTrainer:
                 broadcast_buffers=False,
                 find_unused_parameters=True,
             )
+    
+    def _get_estimator(self):
+        """Get the score estimator, handling DDP wrapper."""
+        if self.config.ddp.enabled:
+            return self.ddp_score_estimator
+        return self.score_estimator
 
     def _setup_train_data_generator(self):
         if not hasattr(self, "train_dataset"):
@@ -163,7 +169,7 @@ class BaseDiffusionTrainer:
             self.validate()
             self.training_estimation()
 
-        self.ddp_score_estimator.train()
+        self._get_estimator().train()
 
         if self.config.ddp.global_rank == 0:
             self.train_range = trange(self.step + 1, self.config.training.training_iters + 1)
@@ -218,7 +224,7 @@ class BaseDiffusionTrainer:
         loss_x_0_self_cond = torch.tensor(0.0, device=x_t.device)
         if self.config.model.config.use_self_cond:
             with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
-                x_0_self_cond = self.ddp_score_estimator(
+                x_0_self_cond = self._get_estimator()(
                     x_t=x_t, 
                     time_t=t,
                     attention_mask=attention_mask,
@@ -229,7 +235,7 @@ class BaseDiffusionTrainer:
 
         # model prediction
         with torch.autocast(device_type='cuda', dtype=torch.bfloat16):
-            x_0 = self.ddp_score_estimator(
+            x_0 = self._get_estimator()(
                 x_t=x_t, 
                 time_t=t,
                 attention_mask=attention_mask,
@@ -260,7 +266,7 @@ class BaseDiffusionTrainer:
     @torch.no_grad()
     def validate(self) -> None:
         self._setup_valid_data_generator()
-        self.ddp_score_estimator.eval()
+        self._get_estimator().eval()
         self.switch_to_ema()
         
         total_loss = torch.Tensor([0.0])
@@ -284,7 +290,7 @@ class BaseDiffusionTrainer:
             self.log_data({"total_loss": total_loss}, is_train=False)
 
         self.switch_back_from_ema()
-        self.ddp_score_estimator.train()
+        self._get_estimator().train()
         
     def save_checkpoint(self, last: bool = False) -> None:
         if not os.path.exists(self.config.project.diffusion_checkpoints_folder):
@@ -413,7 +419,7 @@ class BaseDiffusionTrainer:
         """
         This function generate samples and calculate metrics.
         """
-        self.ddp_score_estimator.eval()
+        self._get_estimator().eval()
         self.switch_to_ema()
         self._setup_valid_data_generator()
         
@@ -422,9 +428,12 @@ class BaseDiffusionTrainer:
 
         # Generate samples
         total_num_texts = self.config.generation.num_gen_samples
-        num_texts = int(total_num_texts / dist.get_world_size())
-        if (total_num_texts % dist.get_world_size()) > dist.get_rank():
-            num_texts += 1
+        if self.config.ddp.enabled:
+            num_texts = int(total_num_texts / dist.get_world_size())
+            if (total_num_texts % dist.get_world_size()) > dist.get_rank():
+                num_texts += 1
+        else:
+            num_texts = total_num_texts
         generated_sequences = self.generate_samples(num_texts)
 
         if self.config.ddp.enabled:
@@ -481,7 +490,7 @@ class BaseDiffusionTrainer:
                 log_metric("Metrics", key, value, self.step)
 
         self.switch_back_from_ema()
-        self.ddp_score_estimator.train()
+        self._get_estimator().train()
 
     def generate_samples(self, num_texts: int):
         results = []

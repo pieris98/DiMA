@@ -27,12 +27,15 @@ def main(config):
     # ✅ Initialize Weights and Biases
     if not config.ddp.enabled or config.ddp.global_rank == 0:
         name = config.project.checkpoints_prefix
+        # Disable wandb if project name is "disabled" or if we want to force offline mode without API key
+        wandb_mode = "disabled" if config.project.wandb_project == "disabled" else "offline"
         wandb.init(
-            project=config.project.wandb_project,
+            project=config.project.wandb_project if config.project.wandb_project != "disabled" else "test",
             name=name,
-            mode="online"
+            mode=wandb_mode
         )
-        config_to_wandb(config)
+        if wandb_mode != "disabled":
+            config_to_wandb(config)
 
     device = torch.device(f"cuda:{config.ddp.local_rank}") if config.ddp.enabled else torch.device("cuda")
     trainer = BaseDiffusionTrainer(config, device)

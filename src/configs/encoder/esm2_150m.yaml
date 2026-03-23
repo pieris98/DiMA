@@ -1,0 +1,9 @@
+_target_: src.encoders.ESM2EncoderModel
+_partial_: true
+
+config:
+  encoder_type: "ESM2-150M"
+  encoder_model_name: "facebook/esm2_t30_150M_UR50D"
+  statistics_path: "${project.statistics_folder}/encodings-ESM2-150M.pth"
+
+  embedding_dim: 640

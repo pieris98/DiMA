@@ -1,6 +1,6 @@
 defaults:
-  - model: bert_base
-  - encoder: esm2
+  - model: conditional_bert
+  - encoder: esm2_8m
   - decoder: transformer
   - datasets: swissprot
   - dataloader: default
@@ -11,29 +11,32 @@ defaults:
   - lr_scheduler: cosine
   - metrics: default
   - structure_generation: default
-  
+  - _self_
+
+conditional:
+  type: fold
+  dim: 320
+  cross_attention: true
+  num_families: 8
 
 ddp:
   enabled: true
   local_rank: 0
   global_rank: 0
 
-
 project:
   seed: 42
   path: "${oc.env:PROJECT_ROOT,/home/cherry/dev/phd/DiMA}"
-  wandb_project: "test" #"DiMAv2.0-scaling"
-  checkpoints_prefix: "test" #"DiMAv2.0-35M-CHEAP_shorten_1_dim_1024-AFDB-v2_64_510-1024-320"
+  wandb_project: "dima-conditional"
+  checkpoints_prefix: "conditional-${conditional.type}-esm2_8m"
   checkpoints_folder: "${project.path}/checkpoints"
   diffusion_checkpoints_folder: "${project.checkpoints_folder}/diffusion_checkpoints"
   decoder_checkpoints_folder: "${project.checkpoints_folder}/decoder_checkpoints"
   statistics_folder: "${project.checkpoints_folder}/statistics"
 
-
 s3:
-  bucket: "dima-protein-diffusion" # TODO: Update with your S3 bucket name
-  region: "eu-north-1"          # TODO: Update with your S3 bucket region if not us-east-1
-
+  bucket: "dima-protein-diffusion"
+  region: "eu-north-1"
 
 training:
   training_iters: 1000000
@@ -43,8 +46,6 @@ training:
   batch_size_per_gpu: 32
   ema_rate: 0.9999
   grad_clip_norm: 1.0
-  init_se: ""
-
 
 generation:
   t_min: 0.05
@@ -52,4 +53,3 @@ generation:
   batch_size: 256
   num_gen_samples: 2048
   save_dir: "${project.path}/generated_sequences"
-
